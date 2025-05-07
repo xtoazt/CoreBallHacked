@@ -776,3 +776,38 @@
     $AJB.page.index();
 
 GlobalLevel = $AJB.general.Game().shareLevel;
+// === HACK: Ctrl + Shift + Q twice to skip levels ===
+(function() {
+    let ctrlShiftQPressed = 0;
+    let lastPressTime = 0;
+
+    document.addEventListener('keydown', function(e) {
+        if (e.ctrlKey && e.shiftKey && e.key.toLowerCase() === 'q') {
+            const now = Date.now();
+            if (now - lastPressTime < 500) {
+                ctrlShiftQPressed++;
+            } else {
+                ctrlShiftQPressed = 1;
+            }
+            lastPressTime = now;
+
+            if (ctrlShiftQPressed === 2) {
+                ctrlShiftQPressed = 0;
+                const level = parseInt(prompt("Enter level number to skip to:"), 10);
+                if (!isNaN(level)) {
+                    try {
+                        const levels = $AJB.general.Levels();
+                        if (levels[level]) {
+                            localStorage.setItem("lastLevel", level);
+                            location.reload(); // Reload the page, game should start from that level
+                        } else {
+                            alert("Invalid level number.");
+                        }
+                    } catch (err) {
+                        alert("Hack error: " + err.message);
+                    }
+                }
+            }
+        }
+    });
+})();
